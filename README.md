@@ -23,7 +23,7 @@ A Java library for resiliency in distributed systems
 
 ##### RateLimiter
 
-```json
+```
 {
     capacity: 100000,
     limitForPeriod: 10,
@@ -34,7 +34,7 @@ A Java library for resiliency in distributed systems
 
 ##### BulkHead
 
-```json
+```
 {
     maxConcurrentCalls: 25,
     maxWaitDurationInMillis: 2000,
