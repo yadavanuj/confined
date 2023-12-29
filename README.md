@@ -64,7 +64,6 @@ Let's consider an example of `rate limiter`, in case of `distributed rate limite
 
 #### Key (in version 1)
 - A key can be 36 characters long.
-- A key maps to operation. *More on this later*.
 - A key can use (a-z), (A-Z), (0-9) character set and ":" and "-" as separators.
 - This provides flexibility in multi-tenant systems.
 
@@ -76,3 +75,29 @@ Let's consider an example of `rate limiter`, in case of `distributed rate limite
     <anything-app-wants>-<Resiliency_Policy>:<Protected_Resource>
 ```
 
+### Confined Operations
+`Confined` uses [firedb-mysql](https://github.com/yadavanuj/firedb-mysql) and uses `MySQL` as it's storage engine.
+
+Thus, it uses `Packet` semantic to communicate with database. A packet looks like:
+
+```
+    private Header[] headers;
+    private Operation operation;
+    private Serializable data;
+    private StatusCodes status;
+    private ErrorDetail errorDetail;
+```
+
+Here the most important and `required` fields are, `operation` and `data`.
+
+#### Operation
+In `version 1` `operation` is a `String` and could have following structure.
+
+
+```
+    <Domain_Resource>:<Operation>
+```
+
+This similar to `MVC` where the `Domain_Resource` part helps in identifying the `Controller` and `Operation` helps in identifying the `Action` to be taken.
+
+For example, in order to operate on `Metadata` to `fetch` an entry the `Operation` would be `metadata:get`. Internally, `Confined` uses this information to `select` correct `actor` and performs the action.
