@@ -101,3 +101,6 @@ In `version 1` `operation` is a `String` and could have following structure.
 This similar to `MVC` where the `Domain_Resource` part helps in identifying the `Controller` and `Operation` helps in identifying the `Action` to be taken.
 
 For example, in order to operate on `Metadata` to `fetch` an entry the `Operation` would be `metadata:get`. Internally, `Confined` uses this information to `select` correct `actor` and performs the action.
+
+#### Data
+Here `data` is `JSON` which will be further used by `MySQL` to perform the operation. 

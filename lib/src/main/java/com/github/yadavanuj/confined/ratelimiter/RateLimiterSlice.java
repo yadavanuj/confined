@@ -10,23 +10,20 @@ import lombok.Setter;
 public class RateLimiterSlice {
     @NonNull
     private String key;
-    @Getter
     @Builder.Default
     private long startTime = System.currentTimeMillis();
-    @Getter
     @Setter
     @Builder.Default
     private long acquisitionTime  = -1L;
     private long activePermissions;
-    @Getter
     private final RateLimiterConfig config;
 
-    public long acquired() {
+    public long sliceStateChangeOnAcquired() {
         acquisitionTime = System.currentTimeMillis();
         return --activePermissions;
     }
 
-    public void tick() {
+    public void sliceStateChangeOnTick() {
         // TODO: Capture Old Slice Info
         startTime = System.currentTimeMillis();
         // TODO: Make permissions more flexible.

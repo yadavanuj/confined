@@ -1,106 +1,50 @@
 package com.github.yadavanuj.confined;
 
-import lombok.Builder;
-import lombok.Getter;
+import com.github.yadavanuj.confined.bulkhead.BulkHead;
+import com.github.yadavanuj.confined.bulkhead.BulkHeadConfig;
+import com.github.yadavanuj.confined.bulkhead.BulkHeadRegistry;
+import com.github.yadavanuj.confined.circuitbreaker.CircuitBreaker;
+import com.github.yadavanuj.confined.circuitbreaker.CircuitBreakerConfig;
+import com.github.yadavanuj.confined.circuitbreaker.CircuitBreakerRegistry;
+import com.github.yadavanuj.confined.ratelimiter.RateLimiter;
+import com.github.yadavanuj.confined.ratelimiter.RateLimiterConfig;
+import com.github.yadavanuj.confined.ratelimiter.RateLimiterRegistry;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Supplier;
-
-import com.github.yadavanuj.confined.ratelimiter.RateLimiterPermissionAuthority;
-import com.github.yadavanuj.confined.bulkhead.BulkheadPermissionAuthority;
-import com.github.yadavanuj.confined.circuitbreaker.CircuitPermissionAuthority;
+import java.util.HashMap;
+import java.util.Map;
 
 public interface Confined {
-    <R> R exec(Operation<R> operation) throws RuntimeException;
-    <R>CompletableFuture<R> execAsync(Operation<R> operation) throws RuntimeException;
+    Registry<BulkHead, BulkHeadConfig> register(BulkHeadConfig config);
+    Registry<CircuitBreaker, CircuitBreakerConfig> register(CircuitBreakerConfig config);
+    Registry<RateLimiter, RateLimiterConfig> register(RateLimiterConfig config);
 
-    public class ConfinedException extends RuntimeException {
-        public ConfinedException(String message) {
-            super(message);
-        }
-    }
+    public class ConfinedImpl implements Confined {
+        private Map<String, Registry<BulkHead, BulkHeadConfig>> bulkHeads = new HashMap<>();
+        private Map<String, Registry<CircuitBreaker, CircuitBreakerConfig>> circuitBreakers = new HashMap<>();
+        private Map<String, Registry<RateLimiter, RateLimiterConfig>> rateLimiters = new HashMap<>();
+        public ConfinedImpl() {
 
-    @Builder
-    @Getter
-    public class Operation<R> {
-        private String key;
-        private Supplier<R> supplier;
-    }
-
-    public class ConfinedConfig {
-        private final List<PermissionAuthority> authorities = new ArrayList<>();
-        private boolean rateLimiterConfigured = false;
-        private boolean circuitBreakerConfigured = false;
-        private boolean bulkHeadConfigured = false;
-        public void addRateLimiterPermissionAuthority(RateLimiterPermissionAuthority authority) {
-            if (!rateLimiterConfigured) {
-                this.authorities.add(authority);
-                rateLimiterConfigured = true;
-            } else {
-                throw new ConfinedException("Rate limiter has already been configured.");
-            }
-        }
-
-        public void addCircuitBreakerPermissionAuthority(CircuitPermissionAuthority authority) {
-            if (!circuitBreakerConfigured) {
-                this.authorities.add(authority);
-                circuitBreakerConfigured = true;
-            } else {
-                throw new ConfinedException("Circuit breaker has already been configured.");
-            }
-        }
-
-        public void addBulkHeadPermissionAuthority(BulkheadPermissionAuthority authority) {
-            if (!bulkHeadConfigured) {
-                this.authorities.add(authority);
-                bulkHeadConfigured = true;
-            } else {
-                throw new ConfinedException("Bulkhead has already been configured.");
-            }
-        }
-    }
-
-    /**
-     * TODO: Divide into smaller slices using refresh-period / limit-for-period as an indicative slice count.
-     */
-    public class Implementation implements Confined {
-        private final ConfinedConfig config;
-
-        public Implementation(ConfinedConfig config) {
-            this.config = config;
         }
 
         @Override
-        public <R> R exec(Operation<R> operation) throws RuntimeException {
-            AtomicBoolean canExecute = new AtomicBoolean(true);
-            config.authorities.forEach(approvalAuthority -> {
-                if (!approvalAuthority.isPermitted(operation.getKey())) {
-                    canExecute.set(false);
-                }
-            });
-
-            if (canExecute.get()) {
-                return operation.getSupplier().get();
-            }
-            return null;
+        public Registry<BulkHead, BulkHeadConfig> register(BulkHeadConfig config) {
+            final Registry<BulkHead, BulkHeadConfig> registry = new BulkHeadRegistry(config);
+            this.bulkHeads.put(config.getKey(), registry);
+            return registry;
         }
 
         @Override
-        public <R> CompletableFuture<R> execAsync(Operation<R> operation) throws RuntimeException {
-            AtomicBoolean canExecute = new AtomicBoolean(true);
-            config.authorities.forEach(approvalAuthority -> {
-                if (!approvalAuthority.isPermitted(operation.getKey())) {
-                    canExecute.set(false);
-                }
-            });
+        public Registry<CircuitBreaker, CircuitBreakerConfig> register(CircuitBreakerConfig config) {
+            final Registry<CircuitBreaker, CircuitBreakerConfig> registry = new CircuitBreakerRegistry(config);
+            this.circuitBreakers.put(config.getOperationName(), registry);
+            return registry;
+        }
 
-            if (canExecute.get()) {
-                return CompletableFuture.supplyAsync(operation.getSupplier());
-            }
-            return CompletableFuture.failedFuture(new RuntimeException());
+        @Override
+        public Registry<RateLimiter, RateLimiterConfig> register(RateLimiterConfig config) {
+            final Registry<RateLimiter, RateLimiterConfig> registry = new RateLimiterRegistry(config);
+            this.rateLimiters.put(config.getOperationName(), registry);
+            return registry;
         }
     }
 }

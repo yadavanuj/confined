@@ -13,7 +13,7 @@ plugins {
 }
 
 group 'com.github.yadavanuj.confined'
-version '1.0-SNAPSHOT'
+version '0.1.0-SNAPSHOT'
 
 repositories {
     mavenLocal()
@@ -51,7 +51,7 @@ publishing {
         maven(MavenPublication) {
             groupId = 'com.github.yadavanuj.confined'
             artifactId = 'confined'
-            version = '1.0-SNAPSHOT'
+            version = '0.1.0-SNAPSHOT'
 
             from components.java
         }

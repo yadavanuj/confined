@@ -8,9 +8,11 @@ import java.util.UUID;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class BulkheadConfig {
+public class BulkHeadConfig {
     @Builder.Default
     private String key = UUID.randomUUID().toString();
+    @Builder.Default
+    private String operationName = UUID.randomUUID().toString();
     @Builder.Default
     private int maxConcurrentCalls = 25;
     @Builder.Default

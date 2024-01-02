@@ -1,49 +1,48 @@
 package com.github.yadavanuj.confined.ratelimiter;
 
-import com.github.yadavanuj.confined.PermissionAuthority;
+import com.github.yadavanuj.confined.Policy;
 
-import java.lang.ref.WeakReference;
 import java.util.Objects;
 
 /**
- * An instance of RateLimiter which uses {@link RateLimiterPermissionAuthority} to acquire permission.
- * It merely carries reference to the underlying rate-limiter using {@link #getKey()}.
+ * An instance of RateLimiter which uses {@link RateLimiterKPermissionAuthority} to
+ * acquire permission. It merely carries reference to the underlying rate-limiter 
+ * using {@link #getPolicyKey()}.
  */
-public interface RateLimiter extends PermissionAuthority {
-    String getKey();
+public interface RateLimiter extends Policy {
+    String getPolicyKey();
 
-    class Implementation implements RateLimiter {
-        private final String key;
-        private final WeakReference<RateLimiterPermissionAuthority> registryRef;
+    class RateLimiterImpl implements RateLimiter {
+        private final String policyKey;
+        private final RegistryStore registryStore;
 
-        public Implementation(String key, WeakReference<RateLimiterPermissionAuthority> registryRef) {
-            this.key = key;
-            this.registryRef = registryRef;
+        public RateLimiterImpl(String policyKey, RegistryStore registryStore) {
+            this.policyKey = policyKey;
+            this.registryStore = registryStore;
         }
 
         @Override
-        public String getKey() {
-            return key;
+        public String getPolicyKey() {
+            return policyKey;
         }
 
         @Override
-        public boolean isPermitted(String key) throws PermissionAuthorityException {
-            try {
-                final RateLimiterPermissionAuthority maybeRegistryRef = registryRef.get();
-                if (Objects.nonNull(maybeRegistryRef)) {
-                    return maybeRegistryRef.isPermitted(key);
-                }
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            // TODO: throw better
-            return false;
+        public PolicyType getPolicyType() {
+            return PolicyType.RateLimiter;
         }
 
         @Override
-        public PermissionAuthorityType getPermissionAuthorityType() {
-            return PermissionAuthorityType.RATE_LIMITER;
+        public boolean acquire() {
+            final Policy policy = registryStore.getPolicies().get(policyKey);
+            Objects.requireNonNull(policy, "Policy not found exception");
+            return policy.acquire();
+        }
+
+        @Override
+        public void release() {
+            final Policy policy = registryStore.getPolicies().get(policyKey);
+            Objects.requireNonNull(policy, "Policy not found exception");
+            policy.release();
         }
     }
 }
