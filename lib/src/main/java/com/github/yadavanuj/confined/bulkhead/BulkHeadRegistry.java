@@ -2,73 +2,64 @@ package com.github.yadavanuj.confined.bulkhead;
 
 import com.github.yadavanuj.confined.Policy;
 import com.github.yadavanuj.confined.Registry;
+import com.github.yadavanuj.confined.commons.ConfinedException;
+import com.github.yadavanuj.confined.commons.ConfinedSupplier;
+import com.github.yadavanuj.confined.commons.ConfinedUtils;
 
-import java.util.Objects;
+import java.util.concurrent.Semaphore;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class BulkHeadRegistry extends Registry.BaseRegistry<BulkHead, BulkHeadConfig> {
-    private final RegistryStore store;
-
-    BulkHeadRegistry(BulkHeadConfig config, RegistryStore store) {
-        final String policyKey = this.getPolicyKey(config.getOperationName());
-
-        // Store
-        this.store = store;
-
-        // Initialize
-        final BulkHead bulkhead = new BulkHead.BulkHeadImpl(policyKey, config.getMaxWaitDurationInMillis());
-        store.getPolicies().put(policyKey, bulkhead);
-        store.getConfigurations().put(policyKey, config);
-    }
+    private final Semaphore semaphore;
+    private final BulkHeadConfig config;
 
     public BulkHeadRegistry(BulkHeadConfig config) {
-        this(config, RegistryStore.getInstance());
+        this.config = config;
+        this.semaphore = new Semaphore(config.getMaxConcurrentCalls());
     }
 
     @Override
-    protected boolean onAcquire(String policyKey) {
-        final Policy policy = store.getPolicies().get(policyKey);
-        Objects.requireNonNull(policy, "Policy not found exception");
-        return policy.acquire();
+    protected boolean onAcquire(String policyKey) throws ConfinedException {
+        return ConfinedUtils.acquirePermitsExceptionally(semaphore, config.getMaxWaitDurationInMillis());
     }
 
     @Override
     protected void onRelease(String policyKey) {
-        final Policy policy = store.getPolicies().get(policyKey);
-        Objects.requireNonNull(policy, "Policy not found exception");
-        policy.release();
+        semaphore.release();
     }
 
     @Override
     public Policy.PolicyType policyType() {
-        return store.getPolicyType();
+        return Policy.PolicyType.BulkHead;
     }
 
-    public <R> Supplier<R> decorate(String policyKey, Supplier<R> supplier) {
-        if (this.acquire(policyKey)) {
-            return new Supplier<R>() {
-                @Override
-                public R get() {
+    public <R> ConfinedSupplier<R> decorate(String policyKey, Supplier<R> supplier) {
+        return new ConfinedSupplier<R>() {
+            @Override
+            public R get() throws ConfinedException {
+                if (BulkHeadRegistry.this.acquire(policyKey)) {
                     R result = supplier.get();
-                    store.getPolicies().get(policyKey).release();
+                    BulkHeadRegistry.this.release(policyKey);
                     return result;
                 }
-            };
-        }
-        throw new RuntimeException("");
+                return null;
+            }
+        };
     }
 
     public <T, R> Function<T, R> decorate(String policyKey, Function<T, R> func) {
-        if (this.acquire(policyKey)) {
-            return new Function<T, R>() {
-                @Override
-                public R apply(T t) {
+        try {
+            if (this.acquire(policyKey)) {
+                final Registry<BulkHead, BulkHeadConfig> that = this;
+                return t -> {
                     R result = func.apply(t);
-                    store.getPolicies().get(policyKey).release();
+                    that.release(policyKey);
                     return result;
-                }
-            };
+                };
+            }
+        } catch (ConfinedException e) {
+            throw new RuntimeException(e);
         }
         throw new RuntimeException("");
     }
