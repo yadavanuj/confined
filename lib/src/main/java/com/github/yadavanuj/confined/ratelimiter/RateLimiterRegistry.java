@@ -2,6 +2,8 @@ package com.github.yadavanuj.confined.ratelimiter;
 
 import com.github.yadavanuj.confined.Policy;
 import com.github.yadavanuj.confined.Registry;
+import com.github.yadavanuj.confined.commons.ConfinedException;
+import com.github.yadavanuj.confined.commons.ConfinedSupplier;
 
 import java.util.Objects;
 import java.util.concurrent.Semaphore;
@@ -62,30 +64,38 @@ public class RateLimiterRegistry extends Registry.BaseRegistry<RateLimiter, Rate
         return store.getPolicyType();
     }
 
-    public <R> Supplier<R> decorate(String policyKey, Supplier<R> supplier) {
-        if (this.acquire(policyKey)) {
-            return new Supplier<R>() {
-                @Override
-                public R get() {
-                    R result = supplier.get();
-                    store.getPolicies().get(policyKey).release();
-                    return result;
-                }
-            };
+    public <R> ConfinedSupplier<R> decorate(String policyKey, Supplier<R> supplier) {
+        try {
+            if (this.acquire(policyKey)) {
+                return new ConfinedSupplier<R>() {
+                    @Override
+                    public R get() {
+                        R result = supplier.get();
+                        store.getPolicies().get(policyKey).release();
+                        return result;
+                    }
+                };
+            }
+        } catch (ConfinedException e) {
+            throw new RuntimeException(e);
         }
         throw new RuntimeException("");
     }
 
     public <T, R> Function<T, R> decorate(String policyKey, Function<T, R> func) {
-        if (this.acquire(policyKey)) {
-            return new Function<T, R>() {
-                @Override
-                public R apply(T t) {
-                    R result = func.apply(t);
-                    store.getPolicies().get(policyKey).release();
-                    return result;
-                }
-            };
+        try {
+            if (this.acquire(policyKey)) {
+                return new Function<T, R>() {
+                    @Override
+                    public R apply(T t) {
+                        R result = func.apply(t);
+                        store.getPolicies().get(policyKey).release();
+                        return result;
+                    }
+                };
+            }
+        } catch (ConfinedException e) {
+            throw new RuntimeException(e);
         }
         throw new RuntimeException("");
     }
