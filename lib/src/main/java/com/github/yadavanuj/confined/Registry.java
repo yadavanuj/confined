@@ -1,5 +1,7 @@
 package com.github.yadavanuj.confined;
 
+import com.github.yadavanuj.confined.bulkhead.BulkHeadRegistry;
+import com.github.yadavanuj.confined.commons.ConfinedErrorCode;
 import com.github.yadavanuj.confined.commons.ConfinedException;
 import com.github.yadavanuj.confined.commons.ConfinedSupplier;
 
@@ -40,6 +42,26 @@ public interface Registry <P, C> {
         public void release(String key) {
             String policyKey = this.getPolicyKey(key);
             this.onRelease(policyKey);
+        }
+
+        public <R> ConfinedSupplier<R> decorate(String policyKey, Supplier<R> supplier) {
+            return new ConfinedSupplier<R>() {
+                @Override
+                public R get() throws ConfinedException {
+                    if (BaseRegistry.this.acquire(policyKey)) {
+                        R result;
+                        try {
+                            result = supplier.get();
+                        } catch (Exception e) {
+                            throw new ConfinedException(ConfinedErrorCode.FailureWhileExecutingOperation, e);
+                        } finally {
+                            BaseRegistry.this.release(policyKey);
+                        }
+                        return result;
+                    }
+                    return null;
+                }
+            };
         }
     }
 }

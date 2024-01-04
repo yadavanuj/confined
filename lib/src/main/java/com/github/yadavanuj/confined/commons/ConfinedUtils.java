@@ -5,23 +5,19 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 public class ConfinedUtils {
-    public static boolean acquirePermitsExceptionally(Semaphore semaphore, long waitDurationInMillis) throws ConfinedException {
+    public static boolean acquirePermitExceptionally(Semaphore semaphore, long waitDurationInMillis) throws ConfinedException {
         boolean result;
         try {
-            System.out.println("request for semaphore");
             result = semaphore.tryAcquire(waitDurationInMillis, TimeUnit.MILLISECONDS);
             if (!result) {
-                System.out.println("semaphore not acquired");
                 throw new ConfinedException(ConfinedErrorCode.FailedToAcquirePermit);
             }
         } catch (InterruptedException e) {
-            System.out.println("semaphore interuupted");
             // TODO: Handle
             //noinspection CallToPrintStackTrace
             e.printStackTrace();
             throw new ConfinedException(ConfinedErrorCode.InterruptedWhileAcquiringPermit);
         }
-        System.out.println("semaphore  acquired");
         return true;
     }
 

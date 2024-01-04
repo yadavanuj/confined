@@ -18,7 +18,7 @@ import java.util.concurrent.Executors;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.Assertions;
 
-public class BulkHeadIntegrationTests {
+public class BulkHeadTests {
     private static final String SERVICE_KEY_FORMAT = "bulkhead:service%d";
     private Confined confined;
     private List<Registry<BulkHead, BulkHeadConfig>> registries;
@@ -29,12 +29,12 @@ public class BulkHeadIntegrationTests {
         registries = new ArrayList<>();
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ConfinedException {
         int serviceId = 1;
         int concurrentCallCount = 1;
         int maxWaitDuration = 100;
 
-        BulkHeadIntegrationTests instance = new BulkHeadIntegrationTests();
+        BulkHeadTests instance = new BulkHeadTests();
         instance.beforeEach();
         instance.createRegistry(serviceId, concurrentCallCount, maxWaitDuration);
 
@@ -45,8 +45,8 @@ public class BulkHeadIntegrationTests {
             ConfinedUtils.sleepUninterruptedly(maxWaitDuration * 2);
             return shouldBeOutput;
         };
-        ConfinedSupplier<String> confinedSupplier = instance.registries.get(0).decorate(getServiceKey(serviceId), supplier);
 
+        ConfinedSupplier<String> confinedSupplier = instance.registries.get(0).decorate(getServiceKey(serviceId), supplier);
         ExecutorService service = Executors.newFixedThreadPool(concurrentCallCount * 2);
 
         for (int i = 0; i < concurrentCallCount * 2; i++) {
@@ -80,7 +80,7 @@ public class BulkHeadIntegrationTests {
 
     @Test
     @DisplayName("Should permit multiple simultaneous operations with single Bulk Head when limits are present and not throw exception")
-    public void testMultipleOperations0() {
+    public void testMultipleOperations0() throws ConfinedException {
         int serviceId = 1;
         int concurrentCallCount = 2;
         int maxWaitDuration = 100;
@@ -107,7 +107,7 @@ public class BulkHeadIntegrationTests {
 
     @Test
     @DisplayName("Should throw exception when permits are not available within wait time duration")
-    public void testMultipleOperations1() {
+    public void testMultipleOperations1() throws ConfinedException {
         int serviceId = 1;
         int concurrentCallCount = 1;
         int maxWaitDuration = 100;
@@ -145,11 +145,9 @@ public class BulkHeadIntegrationTests {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-
-
     }
 
-    private void createRegistry(int serviceId, int maxConcurrentCalls, int maxWaitDuration) {
+    private void createRegistry(int serviceId, int maxConcurrentCalls, int maxWaitDuration) throws ConfinedException {
         BulkHeadConfig bulkHeadConfig = BulkHeadConfig.builder()
                 .key(getServiceKey(serviceId))
                 .maxConcurrentCalls(maxConcurrentCalls)

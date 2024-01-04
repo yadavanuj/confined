@@ -7,12 +7,12 @@ import java.util.concurrent.TimeUnit;
 
 public interface BulkHead extends Policy {
 
-    public class BulkHeadImpl implements BulkHead {
+    public class Impl implements BulkHead {
         private final Semaphore semaphore;
         private final int maxWaitDurationInMillis;
 
-        public BulkHeadImpl(String policyKey,
-                            int maxWaitDurationInMillis) {
+        public Impl(String policyKey,
+                    int maxWaitDurationInMillis) {
 
             this.maxWaitDurationInMillis = maxWaitDurationInMillis;
             this.semaphore = new Semaphore(1);

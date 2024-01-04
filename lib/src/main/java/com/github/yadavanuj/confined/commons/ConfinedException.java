@@ -10,4 +10,9 @@ public class ConfinedException extends Exception {
         super(errorCode.getValue());
         this.errorCode = errorCode;
     }
+
+    public ConfinedException(ConfinedErrorCode errorCode, Throwable throwable) {
+        super(errorCode.getValue(), throwable);
+        this.errorCode = errorCode;
+    }
 }

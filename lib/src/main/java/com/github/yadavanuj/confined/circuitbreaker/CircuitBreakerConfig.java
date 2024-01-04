@@ -1,14 +1,11 @@
 package com.github.yadavanuj.confined.circuitbreaker;
 
-import com.github.yadavanuj.confined.Policy;
 import lombok.Builder;
 import lombok.Getter;
 
 @Builder
 @Getter
 public class CircuitBreakerConfig {
-    @Builder.Default
-    private Policy.PolicyType policyType = Policy.PolicyType.CircuitBreaker;
     private String operationName;
     /**
      * Configures the failure rate threshold in percentage. If the failure rate is equal to or

@@ -5,7 +5,10 @@ import lombok.Getter;
 @Getter
 public enum ConfinedErrorCode {
     FailedToAcquirePermit("FailedToAcquirePermit"),
-    InterruptedWhileAcquiringPermit("InterruptedWhileAcquiringPermit")
+    InterruptedWhileAcquiringPermit("InterruptedWhileAcquiringPermit"),
+    FailedToInstantiateRegistry("FailedToInstantiateRegistry"),
+    FailureWhileExecutingOperation("FailureWhileExecutingOperation"),
+    PolicyNotFound("PolicyNotFound")
     ;
 
     private final String value;

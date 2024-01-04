@@ -3,12 +3,10 @@ package com.github.yadavanuj.confined.bulkhead;
 import com.github.yadavanuj.confined.Policy;
 import com.github.yadavanuj.confined.Registry;
 import com.github.yadavanuj.confined.commons.ConfinedException;
-import com.github.yadavanuj.confined.commons.ConfinedSupplier;
 import com.github.yadavanuj.confined.commons.ConfinedUtils;
 
 import java.util.concurrent.Semaphore;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 public class BulkHeadRegistry extends Registry.BaseRegistry<BulkHead, BulkHeadConfig> {
     private final Semaphore semaphore;
@@ -21,7 +19,7 @@ public class BulkHeadRegistry extends Registry.BaseRegistry<BulkHead, BulkHeadCo
 
     @Override
     protected boolean onAcquire(String policyKey) throws ConfinedException {
-        return ConfinedUtils.acquirePermitsExceptionally(semaphore, config.getMaxWaitDurationInMillis());
+        return ConfinedUtils.acquirePermitExceptionally(semaphore, config.getMaxWaitDurationInMillis());
     }
 
     @Override
@@ -32,20 +30,6 @@ public class BulkHeadRegistry extends Registry.BaseRegistry<BulkHead, BulkHeadCo
     @Override
     public Policy.PolicyType policyType() {
         return Policy.PolicyType.BulkHead;
-    }
-
-    public <R> ConfinedSupplier<R> decorate(String policyKey, Supplier<R> supplier) {
-        return new ConfinedSupplier<R>() {
-            @Override
-            public R get() throws ConfinedException {
-                if (BulkHeadRegistry.this.acquire(policyKey)) {
-                    R result = supplier.get();
-                    BulkHeadRegistry.this.release(policyKey);
-                    return result;
-                }
-                return null;
-            }
-        };
     }
 
     public <T, R> Function<T, R> decorate(String policyKey, Function<T, R> func) {
