@@ -1,6 +1,9 @@
 package com.github.yadavanuj.confined.ratelimiter;
 
 import com.github.yadavanuj.confined.Policy;
+import com.github.yadavanuj.confined.commons.ConfinedErrorCode;
+import com.github.yadavanuj.confined.commons.ConfinedException;
+import com.github.yadavanuj.confined.commons.ConfinedUtils;
 import lombok.Getter;
 
 import java.util.HashMap;
@@ -9,6 +12,7 @@ import java.util.Objects;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
+// TODO: Algorithm must consider capacity (actually provider should)
 @Getter
 public class RegistryStore {
     private static final RegistryStore INSTANCE = new RegistryStore();
@@ -73,56 +77,44 @@ public class RegistryStore {
     }
 
     private long stateChangeOnAcquisition(String key) {
-        long activePermissions = slices.get(key).sliceStateChangeOnAcquired();
-        semaphores.get(key).release();
-        return activePermissions;
+        return slices.get(key).sliceStateChangeOnAcquired();
     }
 
-    public boolean acquire(String key, AcquisitionState acquisitionState) throws RateLimiterException {
+    public boolean acquire(String key) throws ConfinedException {
+        return acquire(key, AcquisitionState.builder().build());
+    }
+    public boolean acquire(String key, AcquisitionState acquisitionState) throws ConfinedException {
         try {
             if (semaphores.get(key).tryAcquire(1, sleepTime(key), TimeUnit.MILLISECONDS)) {
-//                    Debug.log(isDebug, Debug.SemaphoreAcquired, acquisitionState.getCycle());
                 long activePermissions = 0;
                 if (shouldStartSlice(key)) {
                     tick(key);
                     if (hasPermission(key)) {
                         activePermissions = stateChangeOnAcquisition(key);
                     }
-//                        Debug.log(isDebug, Debug.StartingSlice, acquisitionState.getCycle(), activePermissions);
                     return true;
                 } else if (shouldEndSlice(key)) {
                     tick(key);
                     if (hasPermission(key)) {
                         activePermissions = stateChangeOnAcquisition(key);
                     }
-//                        Debug.log(isDebug, Debug.EndingSlice, acquisitionState.getCycle(), activePermissions);
                     return true;
                 } else if (hasPermission(key)) {
                     activePermissions = stateChangeOnAcquisition(key);
-//                        Debug.log(isDebug, Debug.AcquiringWithinWindow, acquisitionState.getCycle(), activePermissions);
                     return true;
                 } else if (acquisitionState.getCycle() < configurations.get(key).getTimeoutSlicingFactor() - 1) {
-                    try {
-                        acquisitionState.setCycle(acquisitionState.getCycle() + 1);
-//                            Debug.log(isDebug, Debug.GoingToSleep, acquisitionState.getCycle());
-                        semaphores.get(key).release();
-                        Thread.sleep(sleepTime(key));
-                    } catch (InterruptedException e) {
-                        semaphores.get(key).release();
-                        e.printStackTrace();
-                        // TODO: Handle Better
-                        throw new RateLimiterException(e);
-                    }
+                    acquisitionState.setCycle(acquisitionState.getCycle() + 1);
+                    semaphores.get(key).release();
+                    ConfinedUtils.sleepUninterruptedly(sleepTime(key));
                     return acquire(key, acquisitionState);
                 }
-
-//                semaphores.get(key).release();
                 return false;
             }
         } catch (InterruptedException e) {
+            // TODO: Handle
+            //noinspection CallToPrintStackTrace
             e.printStackTrace();
-            // TODO: Could not acquire semaphore
-            throw new RateLimiterException(e);
+            throw new ConfinedException(ConfinedErrorCode.FailedToAcquirePermit);
         }
         return false;
     }

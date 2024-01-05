@@ -1,9 +1,7 @@
-package com.github.yadavanuj.confined.integration.tests;
+package com.github.yadavanuj.confined.bulkhead;
 
 import com.github.yadavanuj.confined.Confined;
 import com.github.yadavanuj.confined.Registry;
-import com.github.yadavanuj.confined.bulkhead.BulkHead;
-import com.github.yadavanuj.confined.bulkhead.BulkHeadConfig;
 import com.github.yadavanuj.confined.commons.ConfinedException;
 import com.github.yadavanuj.confined.commons.ConfinedSupplier;
 import com.github.yadavanuj.confined.commons.ConfinedUtils;
@@ -18,7 +16,7 @@ import java.util.concurrent.Executors;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.Assertions;
 
-public class BulkHeadTests {
+public class BulkHeadIntegrationTests {
     private static final String SERVICE_KEY_FORMAT = "bulkhead:service%d";
     private Confined confined;
     private List<Registry<BulkHead, BulkHeadConfig>> registries;
@@ -34,7 +32,7 @@ public class BulkHeadTests {
         int concurrentCallCount = 1;
         int maxWaitDuration = 100;
 
-        BulkHeadTests instance = new BulkHeadTests();
+        BulkHeadIntegrationTests instance = new BulkHeadIntegrationTests();
         instance.beforeEach();
         instance.createRegistry(serviceId, concurrentCallCount, maxWaitDuration);
 

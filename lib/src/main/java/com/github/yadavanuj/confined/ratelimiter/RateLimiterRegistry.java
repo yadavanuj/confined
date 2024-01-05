@@ -2,6 +2,7 @@ package com.github.yadavanuj.confined.ratelimiter;
 
 import com.github.yadavanuj.confined.Policy;
 import com.github.yadavanuj.confined.Registry;
+import com.github.yadavanuj.confined.commons.ConfinedErrorCode;
 import com.github.yadavanuj.confined.commons.ConfinedException;
 import com.github.yadavanuj.confined.commons.ConfinedSupplier;
 
@@ -23,17 +24,13 @@ public class RateLimiterRegistry extends Registry.BaseRegistry<RateLimiter, Rate
     }
 
     @Override
-    protected boolean onAcquire(String policyKey) {
-        final Policy policy = store.getPolicies().get(policyKey);
-        Objects.requireNonNull(policy, "Policy not found exception");
-        return policy.acquire();
+    protected boolean onAcquire(String policyKey) throws ConfinedException {
+        return store.acquire(policyKey);
     }
 
     @Override
     protected void onRelease(String policyKey) {
-        final Policy policy = store.getPolicies().get(policyKey);
-        Objects.requireNonNull(policy, "Policy not found exception");
-        policy.release();
+        store.release(policyKey);
     }
 
     private void initialize(RateLimiterConfig config) {
@@ -54,7 +51,7 @@ public class RateLimiterRegistry extends Registry.BaseRegistry<RateLimiter, Rate
 
         // Register
         store.getConfigurations().put(policyKey, config);
-        store.getSemaphores().put(policyKey, semaphore);
+        store.getSemaphores().put(policyKey, new Semaphore(config.getProperties().getLimitForPeriod()));
         store.getPolicies().put(policyKey, maybeLimiter);
         store.getSlices().put(policyKey, slice);
     }
@@ -64,25 +61,9 @@ public class RateLimiterRegistry extends Registry.BaseRegistry<RateLimiter, Rate
         return store.getPolicyType();
     }
 
-    public <R> ConfinedSupplier<R> decorate(String policyKey, Supplier<R> supplier) {
-        try {
-            if (this.acquire(policyKey)) {
-                return new ConfinedSupplier<R>() {
-                    @Override
-                    public R get() {
-                        R result = supplier.get();
-                        store.getPolicies().get(policyKey).release();
-                        return result;
-                    }
-                };
-            }
-        } catch (ConfinedException e) {
-            throw new RuntimeException(e);
-        }
-        throw new RuntimeException("");
-    }
-
     public <T, R> Function<T, R> decorate(String policyKey, Function<T, R> func) {
+        final Policy policy = store.getPolicies().get(policyKey);
+        Objects.requireNonNull(policy, "Policy not found exception");
         try {
             if (this.acquire(policyKey)) {
                 return new Function<T, R>() {

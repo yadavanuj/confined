@@ -1,12 +1,10 @@
-package com.github.yadavanuj.confined.integration.tests;
+package com.github.yadavanuj.confined.circuitbreaker;
 
 import com.github.yadavanuj.confined.Confined;
 import com.github.yadavanuj.confined.Registry;
-import com.github.yadavanuj.confined.circuitbreaker.CircuitBreaker;
-import com.github.yadavanuj.confined.circuitbreaker.CircuitBreakerConfig;
-import com.github.yadavanuj.confined.circuitbreaker.SlidingWindowType;
 import com.github.yadavanuj.confined.commons.ConfinedException;
 import com.github.yadavanuj.confined.commons.ConfinedSupplier;
+import com.github.yadavanuj.confined.commons.TestHelper;
 import org.junit.jupiter.api.BeforeEach;
 
 import java.util.*;
@@ -15,8 +13,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Supplier;
 
-public class CircuitBreakerTests {
+public class CircuitBreakerIntegrationTests {
     private static final String SERVICE_KEY_FORMAT = "circuitbreaker:service%d";
+    private final TestHelper helper = new TestHelper(SERVICE_KEY_FORMAT);
     private Confined confined;
     private List<Registry<CircuitBreaker, CircuitBreakerConfig>> registries;
 
@@ -39,7 +38,7 @@ public class CircuitBreakerTests {
                 .slidingWindowType(SlidingWindowType.COUNT_BASED)
                 .recordExceptions(new Class[]{RuntimeException.class, ConfinedException.class})
                 .build();
-        CircuitBreakerTests instance = new CircuitBreakerTests();
+        CircuitBreakerIntegrationTests instance = new CircuitBreakerIntegrationTests();
         instance.beforeEach();
 
         Registry<CircuitBreaker, CircuitBreakerConfig> registry = instance.confined.register(circuitBreakerConfig);
