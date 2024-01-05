@@ -1,6 +1,6 @@
 package com.github.yadavanuj.confined.ratelimiter;
 
-import com.github.yadavanuj.confined.Policy;
+import com.github.yadavanuj.confined.PermitType;
 import com.github.yadavanuj.confined.commons.ConfinedErrorCode;
 import com.github.yadavanuj.confined.commons.ConfinedException;
 import com.github.yadavanuj.confined.commons.ConfinedUtils;
@@ -18,9 +18,8 @@ public class RegistryStore {
     private static final RegistryStore INSTANCE = new RegistryStore();
     private final Map<String, RateLimiterSlice> slices = new HashMap<>();
     private final Map<String, Semaphore> semaphores = new HashMap<>();
-    private final Map<String, RateLimiter> policies = new HashMap<>();
     private final Map<String, RateLimiterConfig> configurations = new HashMap<>();
-    private final Policy.PolicyType policyType = Policy.PolicyType.RateLimiter;
+    private final PermitType permitType = PermitType.RateLimiter;
 
     public static RegistryStore getInstance() {
         return INSTANCE;

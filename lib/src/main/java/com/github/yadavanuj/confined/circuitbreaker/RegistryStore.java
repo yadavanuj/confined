@@ -1,6 +1,6 @@
 package com.github.yadavanuj.confined.circuitbreaker;
 
-import com.github.yadavanuj.confined.Policy;
+import com.github.yadavanuj.confined.PermitType;
 import lombok.Getter;
 
 import java.util.HashMap;
@@ -10,8 +10,7 @@ import java.util.Map;
 public class RegistryStore {
     public static final RegistryStore INSTANCE = new RegistryStore();
     private final Map<String, io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry> registries = new HashMap<>();
-    private final Map<String, Policy> policies = new HashMap<>();
-    private final Policy.PolicyType policyType = Policy.PolicyType.CircuitBreaker;
+    private final PermitType permitType = PermitType.CircuitBreaker;
     public static RegistryStore getInstance() {
         return INSTANCE;
     }

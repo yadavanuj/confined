@@ -1,6 +1,7 @@
 package com.github.yadavanuj.confined.bulkhead;
 
 import com.github.yadavanuj.confined.Confined;
+import com.github.yadavanuj.confined.PermitType;
 import com.github.yadavanuj.confined.Registry;
 import com.github.yadavanuj.confined.commons.ConfinedException;
 import com.github.yadavanuj.confined.commons.ConfinedSupplier;
@@ -19,11 +20,11 @@ import org.junit.jupiter.api.Assertions;
 public class BulkHeadIntegrationTests {
     private static final String SERVICE_KEY_FORMAT = "bulkhead:service%d";
     private Confined confined;
-    private List<Registry<BulkHead, BulkHeadConfig>> registries;
+    private List<Registry<BulkHeadConfig>> registries;
 
     @BeforeEach
     public void beforeEach() {
-        confined = new Confined.ConfinedImpl();
+        confined = new Confined.Impl();
         registries = new ArrayList<>();
     }
 
@@ -148,10 +149,13 @@ public class BulkHeadIntegrationTests {
     private void createRegistry(int serviceId, int maxConcurrentCalls, int maxWaitDuration) throws ConfinedException {
         BulkHeadConfig bulkHeadConfig = BulkHeadConfig.builder()
                 .key(getServiceKey(serviceId))
+                .permitType(PermitType.BulkHead)
                 .maxConcurrentCalls(maxConcurrentCalls)
                 .maxWaitDurationInMillis(maxWaitDuration)
                 .build();
-        Registry<BulkHead, BulkHeadConfig> registry = confined.register(bulkHeadConfig);
+
+        @SuppressWarnings("unchecked")
+        Registry<BulkHeadConfig> registry = (Registry<BulkHeadConfig>) confined.register(bulkHeadConfig);
         registries.add(registry);
     }
 

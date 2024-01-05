@@ -1,11 +1,13 @@
 package com.github.yadavanuj.confined.circuitbreaker;
 
+import com.github.yadavanuj.confined.commons.ConfinedConfig;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.experimental.SuperBuilder;
 
-@Builder
 @Getter
-public class CircuitBreakerConfig {
+@SuperBuilder(toBuilder = true)
+public class CircuitBreakerConfig extends ConfinedConfig {
     private String operationName;
     /**
      * Configures the failure rate threshold in percentage. If the failure rate is equal to or

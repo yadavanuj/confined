@@ -1,17 +1,15 @@
 package com.github.yadavanuj.confined.bulkhead;
 
-import lombok.AllArgsConstructor;
+import com.github.yadavanuj.confined.commons.ConfinedConfig;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
+import lombok.experimental.SuperBuilder;
 
 import java.util.UUID;
 
-@Data
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
-public class BulkHeadConfig {
+@Getter
+@SuperBuilder(toBuilder = true)
+public class BulkHeadConfig extends ConfinedConfig {
     @Builder.Default
     private String key = UUID.randomUUID().toString();
     @Builder.Default

@@ -1,6 +1,6 @@
 package com.github.yadavanuj.confined.circuitbreaker;
 
-import com.github.yadavanuj.confined.Policy;
+import com.github.yadavanuj.confined.PermitType;
 import com.github.yadavanuj.confined.Registry;
 import com.github.yadavanuj.confined.commons.ConfinedErrorCode;
 import com.github.yadavanuj.confined.commons.ConfinedException;
@@ -11,7 +11,7 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public class CircuitBreakerRegistry extends Registry.BaseRegistry<CircuitBreaker, CircuitBreakerConfig> {
+public class CircuitBreakerRegistry extends Registry.BaseRegistry<CircuitBreakerConfig> {
     private final RegistryStore store;
 
     public CircuitBreakerRegistry(CircuitBreakerConfig config) {
@@ -24,24 +24,24 @@ public class CircuitBreakerRegistry extends Registry.BaseRegistry<CircuitBreaker
     }
 
     @Override
-    protected boolean onAcquire(String policyKey) throws ConfinedException {
-        final io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry circuitBreakerRegistry = store.getRegistries().get(policyKey);
-        Objects.requireNonNull(circuitBreakerRegistry, ConfinedErrorCode.PolicyNotFound.getValue());
-        if (!circuitBreakerRegistry.circuitBreaker(policyKey).tryAcquirePermission()) {
+    protected boolean onAcquire(String key) throws ConfinedException {
+        final io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry circuitBreakerRegistry = store.getRegistries().get(key);
+        Objects.requireNonNull(circuitBreakerRegistry, ConfinedErrorCode.RegistryNotFound.getValue());
+        if (!circuitBreakerRegistry.circuitBreaker(key).tryAcquirePermission()) {
             throw new ConfinedException(ConfinedErrorCode.FailedToAcquirePermit);
         }
         return true;
     }
 
     @Override
-    protected void onRelease(String policyKey) {
-        final io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry circuitBreakerRegistry = store.getRegistries().get(policyKey);
-        Objects.requireNonNull(circuitBreakerRegistry, ConfinedErrorCode.PolicyNotFound.getValue());
-        circuitBreakerRegistry.circuitBreaker(policyKey).releasePermission();
+    protected void onRelease(String key) {
+        final io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry circuitBreakerRegistry = store.getRegistries().get(key);
+        Objects.requireNonNull(circuitBreakerRegistry, ConfinedErrorCode.RegistryNotFound.getValue());
+        circuitBreakerRegistry.circuitBreaker(key).releasePermission();
     }
 
     private void initialize(CircuitBreakerConfig config) {
-        final String policyKey = this.getPolicyKey(config.getOperationName());
+        final String permitKey = this.getPermitKey(config.getOperationName());
 
         // Create Resilience Circuit Breaker Config
         final io.github.resilience4j.circuitbreaker.CircuitBreakerConfig resilienceCircuitBreakerConfig = io.github.resilience4j.circuitbreaker.CircuitBreakerConfig.custom()
@@ -63,8 +63,8 @@ public class CircuitBreakerRegistry extends Registry.BaseRegistry<CircuitBreaker
                 = io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry.of(resilienceCircuitBreakerConfig);
 
 
-        store.getRegistries().put(policyKey, resilienceCircuitBreakerRegistry);
-        io.github.resilience4j.circuitbreaker.CircuitBreaker resilienceCircuitBreaker = resilienceCircuitBreakerRegistry.circuitBreaker(policyKey);
+        store.getRegistries().put(permitKey, resilienceCircuitBreakerRegistry);
+        io.github.resilience4j.circuitbreaker.CircuitBreaker resilienceCircuitBreaker = resilienceCircuitBreakerRegistry.circuitBreaker(permitKey);
     }
 
     private io.github.resilience4j.circuitbreaker.CircuitBreakerConfig.SlidingWindowType getSlidingWindowType(CircuitBreakerConfig config) {
@@ -72,14 +72,14 @@ public class CircuitBreakerRegistry extends Registry.BaseRegistry<CircuitBreaker
     }
 
     @Override
-    public Policy.PolicyType policyType() {
-        return store.getPolicyType();
+    public PermitType permitType() {
+        return store.getPermitType();
     }
 
-    public <R> ConfinedSupplier<R> decorate(String policyKey, Supplier<R> supplier) {
-        final io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry circuitBreakerRegistry = store.getRegistries().get(policyKey);
-        Objects.requireNonNull(circuitBreakerRegistry, ConfinedErrorCode.PolicyNotFound.getValue());
-        io.github.resilience4j.circuitbreaker.CircuitBreaker circuitBreaker = circuitBreakerRegistry.circuitBreaker(policyKey);
+    public <R> ConfinedSupplier<R> decorate(String key, Supplier<R> supplier) {
+        final io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry circuitBreakerRegistry = store.getRegistries().get(key);
+        Objects.requireNonNull(circuitBreakerRegistry, ConfinedErrorCode.RegistryNotFound.getValue());
+        io.github.resilience4j.circuitbreaker.CircuitBreaker circuitBreaker = circuitBreakerRegistry.circuitBreaker(key);
         Supplier<R> decoratedSupplier = io.github.resilience4j.circuitbreaker.CircuitBreaker.decorateSupplier(circuitBreaker, supplier);;
         return new ConfinedSupplier<R>() {
             @Override
@@ -95,14 +95,14 @@ public class CircuitBreakerRegistry extends Registry.BaseRegistry<CircuitBreaker
             }
         };
     }
-    public <T, R> Function<T, R> decorate(String policyKey, Function<T, R> func) {
+    public <T, R> Function<T, R> decorate(String key, Function<T, R> func) {
         try {
-            if (this.acquire(policyKey)) {
+            if (this.acquire(key)) {
                 return new Function<T, R>() {
                     @Override
                     public R apply(T t) {
                         R result = func.apply(t);
-                        store.getPolicies().get(policyKey).release();
+                        CircuitBreakerRegistry.this.release(key);
                         return result;
                     }
                 };

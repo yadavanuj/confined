@@ -1,9 +1,8 @@
 package com.github.yadavanuj.confined.ratelimiter;
 
 import com.github.yadavanuj.confined.Confined;
+import com.github.yadavanuj.confined.PermitType;
 import com.github.yadavanuj.confined.Registry;
-import com.github.yadavanuj.confined.circuitbreaker.CircuitBreaker;
-import com.github.yadavanuj.confined.circuitbreaker.CircuitBreakerConfig;
 import com.github.yadavanuj.confined.commons.ConfinedException;
 import com.github.yadavanuj.confined.commons.ConfinedSupplier;
 import com.github.yadavanuj.confined.commons.ConfinedUtils;
@@ -20,15 +19,15 @@ public class RateLimiterIntegrationTests {
     private static final String SERVICE_KEY_FORMAT = "ratelimiter:service%d";
     private final TestHelper helper = new TestHelper(SERVICE_KEY_FORMAT);
     private Confined confined;
-    private List<Registry<RateLimiter, RateLimiterConfig>> registries;
+    private List<Registry<RateLimiterConfig>> registries;
 
     @BeforeEach
     public void beforeEach() {
-        confined = new Confined.ConfinedImpl();
+        confined = new Confined.Impl();
         registries = new ArrayList<>();
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ConfinedException {
         int serviceId = 1;
         int concurrentCallCount = 1;
         int maxWaitDuration = 100;
@@ -45,12 +44,14 @@ public class RateLimiterIntegrationTests {
                 .build();
         RateLimiterConfig rateLimiterConfig = RateLimiterConfig.builder()
                 .operationName(instance.helper.getServiceKey(serviceId))
-                .permissionProvider((policyKey) -> true)
+                .permitType(PermitType.RateLimiter)
+                .permissionProvider((permitKey) -> true)
                 .timeoutSlicingFactor(2)
                 .properties(properties)
                 .build();
 
-        Registry<RateLimiter, RateLimiterConfig> registry = new RateLimiterRegistry(rateLimiterConfig);
+        @SuppressWarnings("unchecked")
+        Registry<RateLimiterConfig> registry = (Registry<RateLimiterConfig>) instance.confined.register(rateLimiterConfig);
         instance.registries.add(registry);
 
         // Have more threads available

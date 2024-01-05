@@ -72,7 +72,7 @@ Let's consider an example of `rate limiter`, in case of `distributed rate limite
 ##### Example Format
 
 ```
-    <anything-app-wants>-<Resiliency_Policy>:<Protected_Resource>
+    <anything-app-wants>-<PermitType>:<Protected_Resource>
 ```
 
 ### Confined Operations

@@ -1,6 +1,7 @@
 package com.github.yadavanuj.confined.circuitbreaker;
 
 import com.github.yadavanuj.confined.Confined;
+import com.github.yadavanuj.confined.PermitType;
 import com.github.yadavanuj.confined.Registry;
 import com.github.yadavanuj.confined.commons.ConfinedException;
 import com.github.yadavanuj.confined.commons.ConfinedSupplier;
@@ -17,11 +18,11 @@ public class CircuitBreakerIntegrationTests {
     private static final String SERVICE_KEY_FORMAT = "circuitbreaker:service%d";
     private final TestHelper helper = new TestHelper(SERVICE_KEY_FORMAT);
     private Confined confined;
-    private List<Registry<CircuitBreaker, CircuitBreakerConfig>> registries;
+    private List<Registry<CircuitBreakerConfig>> registries;
 
     @BeforeEach
     public void beforeEach() {
-        confined = new Confined.ConfinedImpl();
+        confined = new Confined.Impl();
         registries = new ArrayList<>();
     }
 
@@ -30,8 +31,9 @@ public class CircuitBreakerIntegrationTests {
         int concurrentCallCount = 1;
         int maxWaitDuration = 100;
         int operationCount = concurrentCallCount * 2;
-        CircuitBreakerConfig circuitBreakerConfig = CircuitBreakerConfig.builder()
+        @SuppressWarnings("unchecked") CircuitBreakerConfig circuitBreakerConfig = CircuitBreakerConfig.builder()
                 .operationName(getServiceKey(serviceId))
+                .permitType(PermitType.CircuitBreaker)
                 .failureRateThresholdPercentage(20)
                 .slidingWindowSize(2)
                 .minimumNumberOfCalls(1)
@@ -41,7 +43,8 @@ public class CircuitBreakerIntegrationTests {
         CircuitBreakerIntegrationTests instance = new CircuitBreakerIntegrationTests();
         instance.beforeEach();
 
-        Registry<CircuitBreaker, CircuitBreakerConfig> registry = instance.confined.register(circuitBreakerConfig);
+        @SuppressWarnings("unchecked")
+        Registry<CircuitBreakerConfig> registry = (Registry<CircuitBreakerConfig>) instance.confined.register(circuitBreakerConfig);
         instance.registries.add(registry);
 
         // Have more threads available

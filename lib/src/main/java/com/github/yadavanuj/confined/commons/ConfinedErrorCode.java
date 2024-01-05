@@ -8,7 +8,7 @@ public enum ConfinedErrorCode {
     InterruptedWhileAcquiringPermit("InterruptedWhileAcquiringPermit"),
     FailedToInstantiateRegistry("FailedToInstantiateRegistry"),
     FailureWhileExecutingOperation("FailureWhileExecutingOperation"),
-    PolicyNotFound("PolicyNotFound")
+    RegistryNotFound("RegistryNotFound")
     ;
 
     private final String value;
