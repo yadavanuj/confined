@@ -1,9 +1,9 @@
 package com.github.yadavanuj.confined;
 
-import com.github.yadavanuj.confined.types.*;
 import com.github.yadavanuj.confined.internal.permits.bulkhead.BulkHeadRegistry;
 import com.github.yadavanuj.confined.internal.permits.circuitbreaker.CircuitBreakerRegistry;
 import com.github.yadavanuj.confined.internal.permits.ratelimiter.RateLimiterRegistry;
+import com.github.yadavanuj.confined.types.*;
 
 import java.util.HashMap;
 import java.util.Map;

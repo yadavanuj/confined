@@ -1,11 +1,13 @@
 package com.github.yadavanuj.confined.internal.permits.circuitbreaker;
 
-import com.github.yadavanuj.confined.types.CircuitBreakerConfig;
-import com.github.yadavanuj.confined.types.PermitType;
+import com.github.yadavanuj.confined.ConfinedFunction;
+import com.github.yadavanuj.confined.ConfinedSupplier;
 import com.github.yadavanuj.confined.Registry;
+import com.github.yadavanuj.confined.types.CircuitBreakerConfig;
 import com.github.yadavanuj.confined.types.ConfinedErrorCode;
 import com.github.yadavanuj.confined.types.ConfinedException;
-import com.github.yadavanuj.confined.ConfinedSupplier;
+import com.github.yadavanuj.confined.types.PermitType;
+import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 
 import java.time.Duration;
 import java.util.Objects;
@@ -81,11 +83,11 @@ public class CircuitBreakerRegistry extends Registry.BaseRegistry<CircuitBreaker
         final io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry circuitBreakerRegistry = store.getRegistries().get(key);
         Objects.requireNonNull(circuitBreakerRegistry, ConfinedErrorCode.RegistryNotFound.getValue());
         io.github.resilience4j.circuitbreaker.CircuitBreaker circuitBreaker = circuitBreakerRegistry.circuitBreaker(key);
-        Supplier<R> decoratedSupplier = io.github.resilience4j.circuitbreaker.CircuitBreaker.decorateSupplier(circuitBreaker, supplier);;
+        Supplier<R> decoratedSupplier = io.github.resilience4j.circuitbreaker.CircuitBreaker.decorateSupplier(circuitBreaker, supplier);
+        ;
         return new ConfinedSupplier<R>() {
             @Override
             public R get() throws ConfinedException {
-                System.out.println(circuitBreaker.getState());
                 R result;
                 try {
                     result = decoratedSupplier.get();
@@ -96,21 +98,24 @@ public class CircuitBreakerRegistry extends Registry.BaseRegistry<CircuitBreaker
             }
         };
     }
-    public <T, R> Function<T, R> decorate(String key, Function<T, R> func) {
-        try {
-            if (this.acquire(key)) {
-                return new Function<T, R>() {
-                    @Override
-                    public R apply(T t) {
-                        R result = func.apply(t);
-                        CircuitBreakerRegistry.this.release(key);
-                        return result;
-                    }
-                };
+
+    @Override
+    public <I, O> ConfinedFunction<I, O> decorate(String key, Function<I, O> func) {
+        final io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry circuitBreakerRegistry = store.getRegistries().get(key);
+        Objects.requireNonNull(circuitBreakerRegistry, ConfinedErrorCode.RegistryNotFound.getValue());
+        io.github.resilience4j.circuitbreaker.CircuitBreaker circuitBreaker = circuitBreakerRegistry.circuitBreaker(key);
+        Function<I, O> decoratedFunc = CircuitBreaker.decorateFunction(circuitBreaker, func);
+        return new ConfinedFunction<I, O>() {
+            @Override
+            public O apply(I input) throws ConfinedException {
+                O output;
+                try {
+                    output = decoratedFunc.apply(input);
+                } catch (Exception e) {
+                    throw new ConfinedException(ConfinedErrorCode.FailureWhileExecutingOperation, e);
+                }
+                return output;
             }
-        } catch (ConfinedException e) {
-            throw new RuntimeException(e);
-        }
-        throw new RuntimeException("");
+        };
     }
 }

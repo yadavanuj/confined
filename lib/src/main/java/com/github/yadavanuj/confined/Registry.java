@@ -9,13 +9,14 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public interface Registry <C extends ConfinedConfig> {
+public interface Registry<C extends ConfinedConfig> {
     PermitType permitType();
     <R> ConfinedSupplier<R> decorate(String key, Supplier<R> supplier);
-    <T, R> Function<T, R> decorate(String key, Function<T, R> func);
+    <I, O> ConfinedFunction<I, O> decorate(String key, Function<I, O> func);
 
-    public abstract class BaseRegistry<C extends ConfinedConfig> implements Registry<C> {
+    abstract class BaseRegistry<C extends ConfinedConfig> implements Registry<C> {
         protected abstract boolean onAcquire(String key) throws ConfinedException;
+
         protected abstract void onRelease(String key);
 
         protected String getPermitKey(String key) {
@@ -29,12 +30,12 @@ public interface Registry <C extends ConfinedConfig> {
             return key;
         }
 
-        public boolean acquire(String key) throws ConfinedException {
+        protected boolean acquire(String key) throws ConfinedException {
             String permitKey = this.getPermitKey(key);
             return this.onAcquire(permitKey);
         }
 
-        public void release(String key) {
+        protected void release(String key) {
             String permitKey = this.getPermitKey(key);
             this.onRelease(permitKey);
         }
@@ -54,7 +55,27 @@ public interface Registry <C extends ConfinedConfig> {
                         }
                         return result;
                     }
-                    return null;
+                    throw new ConfinedException(ConfinedErrorCode.FailedToAcquirePermit);
+                }
+            };
+        }
+
+        public <I, O> ConfinedFunction<I, O> decorate(String key, Function<I, O> func) {
+            return new ConfinedFunction<I, O>() {
+                @Override
+                public O apply(I input) throws ConfinedException {
+                    if (BaseRegistry.this.acquire(key)) {
+                        O output;
+                        try {
+                            output = func.apply(input);
+                        } catch (Exception e) {
+                            throw new ConfinedException(ConfinedErrorCode.FailureWhileExecutingOperation, e);
+                        } finally {
+                            BaseRegistry.this.release(key);
+                        }
+                        return output;
+                    }
+                    throw new ConfinedException(ConfinedErrorCode.FailedToAcquirePermit);
                 }
             };
         }
