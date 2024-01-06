@@ -1,4 +1,4 @@
-package com.github.yadavanuj.confined.commons;
+package com.github.yadavanuj.confined.types;
 
 import lombok.Getter;
 

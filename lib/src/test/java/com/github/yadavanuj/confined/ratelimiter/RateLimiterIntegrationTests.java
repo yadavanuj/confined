@@ -1,12 +1,14 @@
 package com.github.yadavanuj.confined.ratelimiter;
 
 import com.github.yadavanuj.confined.Confined;
-import com.github.yadavanuj.confined.PermitType;
+import com.github.yadavanuj.confined.types.PermitType;
 import com.github.yadavanuj.confined.Registry;
-import com.github.yadavanuj.confined.commons.ConfinedException;
-import com.github.yadavanuj.confined.commons.ConfinedSupplier;
-import com.github.yadavanuj.confined.commons.ConfinedUtils;
+import com.github.yadavanuj.confined.types.ConfinedException;
+import com.github.yadavanuj.confined.ConfinedSupplier;
+import com.github.yadavanuj.confined.internal.ConfinedUtils;
 import com.github.yadavanuj.confined.commons.TestHelper;
+import com.github.yadavanuj.confined.types.RateLimiterConfig;
+import com.github.yadavanuj.confined.internal.permits.ratelimiter.RateLimiterProperties;
 import org.junit.jupiter.api.BeforeEach;
 
 import java.util.*;

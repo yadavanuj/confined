@@ -1,7 +1,6 @@
-package com.github.yadavanuj.confined.ratelimiter;
+package com.github.yadavanuj.confined.types;
 
-import com.github.yadavanuj.confined.PermitType;
-import com.github.yadavanuj.confined.commons.ConfinedConfig;
+import com.github.yadavanuj.confined.internal.permits.ratelimiter.RateLimiterProperties;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;

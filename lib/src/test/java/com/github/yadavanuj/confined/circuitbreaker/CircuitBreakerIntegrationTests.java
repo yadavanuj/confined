@@ -1,11 +1,13 @@
 package com.github.yadavanuj.confined.circuitbreaker;
 
 import com.github.yadavanuj.confined.Confined;
-import com.github.yadavanuj.confined.PermitType;
+import com.github.yadavanuj.confined.types.PermitType;
 import com.github.yadavanuj.confined.Registry;
-import com.github.yadavanuj.confined.commons.ConfinedException;
-import com.github.yadavanuj.confined.commons.ConfinedSupplier;
+import com.github.yadavanuj.confined.types.ConfinedException;
+import com.github.yadavanuj.confined.ConfinedSupplier;
 import com.github.yadavanuj.confined.commons.TestHelper;
+import com.github.yadavanuj.confined.types.CircuitBreakerConfig;
+import com.github.yadavanuj.confined.internal.permits.circuitbreaker.SlidingWindowType;
 import org.junit.jupiter.api.BeforeEach;
 
 import java.util.*;

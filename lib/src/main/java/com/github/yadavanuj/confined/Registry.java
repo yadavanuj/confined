@@ -1,9 +1,9 @@
 package com.github.yadavanuj.confined;
 
-import com.github.yadavanuj.confined.commons.ConfinedConfig;
-import com.github.yadavanuj.confined.commons.ConfinedErrorCode;
-import com.github.yadavanuj.confined.commons.ConfinedException;
-import com.github.yadavanuj.confined.commons.ConfinedSupplier;
+import com.github.yadavanuj.confined.types.ConfinedConfig;
+import com.github.yadavanuj.confined.types.ConfinedErrorCode;
+import com.github.yadavanuj.confined.types.ConfinedException;
+import com.github.yadavanuj.confined.types.PermitType;
 
 import java.util.Objects;
 import java.util.function.Function;

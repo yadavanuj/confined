@@ -1,9 +1,10 @@
-package com.github.yadavanuj.confined.bulkhead;
+package com.github.yadavanuj.confined.internal.permits.bulkhead;
 
-import com.github.yadavanuj.confined.PermitType;
+import com.github.yadavanuj.confined.types.BulkHeadConfig;
+import com.github.yadavanuj.confined.types.PermitType;
 import com.github.yadavanuj.confined.Registry;
-import com.github.yadavanuj.confined.commons.ConfinedException;
-import com.github.yadavanuj.confined.commons.ConfinedUtils;
+import com.github.yadavanuj.confined.types.ConfinedException;
+import com.github.yadavanuj.confined.internal.ConfinedUtils;
 
 import java.util.concurrent.Semaphore;
 import java.util.function.Function;

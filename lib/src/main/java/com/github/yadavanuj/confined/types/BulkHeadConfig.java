@@ -1,6 +1,5 @@
-package com.github.yadavanuj.confined.bulkhead;
+package com.github.yadavanuj.confined.types;
 
-import com.github.yadavanuj.confined.commons.ConfinedConfig;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;

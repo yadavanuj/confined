@@ -1,6 +1,6 @@
-package com.github.yadavanuj.confined.circuitbreaker;
+package com.github.yadavanuj.confined.internal.permits.circuitbreaker;
 
-import com.github.yadavanuj.confined.PermitType;
+import com.github.yadavanuj.confined.types.PermitType;
 import lombok.Getter;
 
 import java.util.HashMap;

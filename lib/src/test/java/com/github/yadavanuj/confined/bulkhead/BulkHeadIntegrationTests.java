@@ -1,11 +1,12 @@
 package com.github.yadavanuj.confined.bulkhead;
 
 import com.github.yadavanuj.confined.Confined;
-import com.github.yadavanuj.confined.PermitType;
+import com.github.yadavanuj.confined.types.PermitType;
 import com.github.yadavanuj.confined.Registry;
-import com.github.yadavanuj.confined.commons.ConfinedException;
-import com.github.yadavanuj.confined.commons.ConfinedSupplier;
-import com.github.yadavanuj.confined.commons.ConfinedUtils;
+import com.github.yadavanuj.confined.types.ConfinedException;
+import com.github.yadavanuj.confined.ConfinedSupplier;
+import com.github.yadavanuj.confined.internal.ConfinedUtils;
+import com.github.yadavanuj.confined.types.BulkHeadConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

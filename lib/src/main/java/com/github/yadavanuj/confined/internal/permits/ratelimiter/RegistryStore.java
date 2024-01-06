@@ -1,9 +1,10 @@
-package com.github.yadavanuj.confined.ratelimiter;
+package com.github.yadavanuj.confined.internal.permits.ratelimiter;
 
-import com.github.yadavanuj.confined.PermitType;
-import com.github.yadavanuj.confined.commons.ConfinedErrorCode;
-import com.github.yadavanuj.confined.commons.ConfinedException;
-import com.github.yadavanuj.confined.commons.ConfinedUtils;
+import com.github.yadavanuj.confined.types.PermitType;
+import com.github.yadavanuj.confined.types.RateLimiterConfig;
+import com.github.yadavanuj.confined.types.ConfinedErrorCode;
+import com.github.yadavanuj.confined.types.ConfinedException;
+import com.github.yadavanuj.confined.internal.ConfinedUtils;
 import lombok.Getter;
 
 import java.util.HashMap;

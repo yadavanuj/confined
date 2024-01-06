@@ -1,10 +1,11 @@
-package com.github.yadavanuj.confined.circuitbreaker;
+package com.github.yadavanuj.confined.internal.permits.circuitbreaker;
 
-import com.github.yadavanuj.confined.PermitType;
+import com.github.yadavanuj.confined.types.CircuitBreakerConfig;
+import com.github.yadavanuj.confined.types.PermitType;
 import com.github.yadavanuj.confined.Registry;
-import com.github.yadavanuj.confined.commons.ConfinedErrorCode;
-import com.github.yadavanuj.confined.commons.ConfinedException;
-import com.github.yadavanuj.confined.commons.ConfinedSupplier;
+import com.github.yadavanuj.confined.types.ConfinedErrorCode;
+import com.github.yadavanuj.confined.types.ConfinedException;
+import com.github.yadavanuj.confined.ConfinedSupplier;
 
 import java.time.Duration;
 import java.util.Objects;

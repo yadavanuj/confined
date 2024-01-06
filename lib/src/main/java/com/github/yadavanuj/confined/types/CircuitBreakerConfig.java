@@ -1,6 +1,6 @@
-package com.github.yadavanuj.confined.circuitbreaker;
+package com.github.yadavanuj.confined.types;
 
-import com.github.yadavanuj.confined.commons.ConfinedConfig;
+import com.github.yadavanuj.confined.internal.permits.circuitbreaker.SlidingWindowType;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;

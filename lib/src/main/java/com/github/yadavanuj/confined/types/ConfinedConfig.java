@@ -1,6 +1,5 @@
-package com.github.yadavanuj.confined.commons;
+package com.github.yadavanuj.confined.types;
 
-import com.github.yadavanuj.confined.PermitType;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.experimental.SuperBuilder;

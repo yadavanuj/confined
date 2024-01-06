@@ -1,4 +1,4 @@
-package com.github.yadavanuj.confined;
+package com.github.yadavanuj.confined.types;
 
 public enum PermitType {
     BulkHead,

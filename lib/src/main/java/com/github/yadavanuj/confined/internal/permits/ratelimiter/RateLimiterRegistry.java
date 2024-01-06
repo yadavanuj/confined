@@ -1,8 +1,9 @@
-package com.github.yadavanuj.confined.ratelimiter;
+package com.github.yadavanuj.confined.internal.permits.ratelimiter;
 
-import com.github.yadavanuj.confined.PermitType;
+import com.github.yadavanuj.confined.types.PermitType;
+import com.github.yadavanuj.confined.types.RateLimiterConfig;
 import com.github.yadavanuj.confined.Registry;
-import com.github.yadavanuj.confined.commons.ConfinedException;
+import com.github.yadavanuj.confined.types.ConfinedException;
 
 import java.util.concurrent.Semaphore;
 import java.util.function.Function;

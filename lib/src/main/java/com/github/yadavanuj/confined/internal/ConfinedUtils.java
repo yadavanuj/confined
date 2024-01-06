@@ -1,4 +1,7 @@
-package com.github.yadavanuj.confined.commons;
+package com.github.yadavanuj.confined.internal;
+
+import com.github.yadavanuj.confined.types.ConfinedErrorCode;
+import com.github.yadavanuj.confined.types.ConfinedException;
 
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
