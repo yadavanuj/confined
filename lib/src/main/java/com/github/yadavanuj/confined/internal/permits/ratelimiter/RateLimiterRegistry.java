@@ -163,4 +163,12 @@ public class RateLimiterRegistry extends Registry.BaseRegistry<RateLimiterConfig
             semaphores.get(key).release();
         }
     }
+
+    protected Semaphore getSemaphore(String key){return store.semaphores.get(key);}
+
+    public String getName(){
+        return "RL";
+    }
+
+
 }

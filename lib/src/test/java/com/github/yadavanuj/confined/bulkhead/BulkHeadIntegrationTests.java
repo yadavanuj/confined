@@ -1,12 +1,13 @@
 package com.github.yadavanuj.confined.bulkhead;
 
 import com.github.yadavanuj.confined.Confined;
-import com.github.yadavanuj.confined.types.PermitType;
-import com.github.yadavanuj.confined.Registry;
-import com.github.yadavanuj.confined.types.ConfinedException;
 import com.github.yadavanuj.confined.ConfinedSupplier;
+import com.github.yadavanuj.confined.Registry;
 import com.github.yadavanuj.confined.internal.ConfinedUtils;
 import com.github.yadavanuj.confined.types.BulkHeadConfig;
+import com.github.yadavanuj.confined.types.ConfinedException;
+import com.github.yadavanuj.confined.types.PermitType;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -16,7 +17,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Supplier;
-import org.junit.jupiter.api.Assertions;
 
 public class BulkHeadIntegrationTests {
     private static final String SERVICE_KEY_FORMAT = "bulkhead:service%d";

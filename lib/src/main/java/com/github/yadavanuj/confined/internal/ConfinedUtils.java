@@ -9,17 +9,21 @@ import java.util.function.Supplier;
 
 public class ConfinedUtils {
     public static boolean acquirePermitExceptionally(Semaphore semaphore, long waitDurationInMillis) throws ConfinedException {
+        return acquirePermitExceptionally(semaphore,waitDurationInMillis,null);
+    }
+
+        public static boolean acquirePermitExceptionally(Semaphore semaphore, long waitDurationInMillis, String name) throws ConfinedException {
         boolean result;
         try {
             result = semaphore.tryAcquire(waitDurationInMillis, TimeUnit.MILLISECONDS);
             if (!result) {
-                throw new ConfinedException(ConfinedErrorCode.FailedToAcquirePermit);
+                throw new ConfinedException(ConfinedErrorCode.FailedToAcquirePermit,name);
             }
         } catch (InterruptedException e) {
             // TODO: Handle
             //noinspection CallToPrintStackTrace
             e.printStackTrace();
-            throw new ConfinedException(ConfinedErrorCode.InterruptedWhileAcquiringPermit);
+            throw new ConfinedException(ConfinedErrorCode.InterruptedWhileAcquiringPermit, name);
         }
         return true;
     }
