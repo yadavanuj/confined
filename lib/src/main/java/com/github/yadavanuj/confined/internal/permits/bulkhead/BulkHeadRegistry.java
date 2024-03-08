@@ -31,4 +31,10 @@ public class BulkHeadRegistry extends Registry.BaseRegistry<BulkHeadConfig> {
     public PermitType permitType() {
         return PermitType.BulkHead;
     }
+
+    protected Semaphore getSemaphore(){return this.semaphore;}
+    public String getName(){
+        return "BH";
+    }
+
 }

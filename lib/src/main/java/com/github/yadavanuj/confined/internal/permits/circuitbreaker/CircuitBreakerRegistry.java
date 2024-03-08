@@ -31,7 +31,7 @@ public class CircuitBreakerRegistry extends Registry.BaseRegistry<CircuitBreaker
         final io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry circuitBreakerRegistry = store.getRegistries().get(key);
         Objects.requireNonNull(circuitBreakerRegistry, ConfinedErrorCode.RegistryNotFound.getValue());
         if (!circuitBreakerRegistry.circuitBreaker(key).tryAcquirePermission()) {
-            throw new ConfinedException(ConfinedErrorCode.FailedToAcquirePermit);
+            throw new ConfinedException(ConfinedErrorCode.FailedToAcquirePermit,getName());
         }
         return true;
     }
@@ -118,4 +118,9 @@ public class CircuitBreakerRegistry extends Registry.BaseRegistry<CircuitBreaker
             }
         };
     }
+
+    public String getName(){
+        return "CB";
+    }
+
 }
